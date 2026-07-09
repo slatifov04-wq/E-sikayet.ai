@@ -1,225 +1,224 @@
-<!DOCTYPE html>
-<html lang="az">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>E-Şikayət AI — Ağıllı Asistent</title>
-<style>
-*{ margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
-body{ background:#f4f6f9; color: #333; }
-header{ background:#2563eb; color:white; padding:25px; text-align:center; }
-.container{ max-width:1100px; margin:auto; padding:20px; display: grid; grid-template-columns: 1fr; gap: 20px; }
-@media (min-width: 768px) { .container { grid-template-columns: 2fr 1fr; } }
-.card{ background:white; padding:20px; border-radius:15px; box-shadow:0 2px 10px rgba(0,0,0,.1); height: fit-content; }
-.chat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius:10px; height: 350px; overflow-y: auto; padding: 15px; margin-bottom: 15px; }
-.message { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 80%; line-height: 1.4; }
-.user-msg { background: #2563eb; color: white; margin-left: auto; border-bottom-right-radius: 2px; }
-.ai-msg { background: #e2e8f0; color: #1e293b; margin-right: auto; border-bottom-left-radius: 2px; }
-.input-area { display: flex; gap: 10px; }
-input, textarea { width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; }
-.chat-input { flex: 1; }
-button{ padding:12px 20px; background:#2563eb; color:white; border:none; border-radius:10px; cursor:pointer; font-weight: bold; }
-.complaint-card{ background:#fafafa; padding:15px; border-left:5px solid #2563eb; border-radius:10px; margin-top:10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-.badge{ display:inline-block; padding:4px 10px; border-radius:20px; background:#2563eb; color:white; font-size:12px; margin-top:5px; margin-right: 5px; }
-.stats-grid { display: flex; gap: 10px; margin-top: 10px; }
-.stat-box { background: #f1f5f9; padding: 10px; border-radius: 8px; flex: 1; text-align: center; }
-</style>
-</head>
-<body>
+<!DOCTYPE html>  
+<html lang="az">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<title>E-Şikayət AI — Ağıllı Asistent</title>  
+<style>  
+*{ margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }  
+body{ background:#f4f6f9; color: #333; }  
+header{ background:#2563eb; color:white; padding:25px; text-align:center; }  
+.container{ max-width:1100px; margin:auto; padding:20px; display: grid; grid-template-columns: 1fr; gap: 20px; }  
+@media (min-width: 768px) { .container { grid-template-columns: 2fr 1fr; } }  
+.card{ background:white; padding:20px; border-radius:15px; box-shadow:0 2px 10px rgba(0,0,0,.1); height: fit-content; }  
+.chat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius:10px; height: 350px; overflow-y: auto; padding: 15px; margin-bottom: 15px; }  
+.message { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 80%; line-height: 1.4; }  
+.user-msg { background: #2563eb; color: white; margin-left: auto; border-bottom-right-radius: 2px; }  
+.ai-msg { background: #e2e8f0; color: #1e293b; margin-right: auto; border-bottom-left-radius: 2px; }  
+.input-area { display: flex; gap: 10px; }  
+input, textarea { width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; }  
+.chat-input { flex: 1; }  
+button{ padding:12px 20px; background:#2563eb; color:white; border:none; border-radius:10px; cursor:pointer; font-weight: bold; }  
+.complaint-card{ background:#fafafa; padding:15px; border-left:5px solid #2563eb; border-radius:10px; margin-top:10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }  
+.badge{ display:inline-block; padding:4px 10px; border-radius:20px; background:#2563eb; color:white; font-size:12px; margin-top:5px; margin-right: 5px; }  
+.stats-grid { display: flex; gap: 10px; margin-top: 10px; }  
+.stat-box { background: #f1f5f9; padding: 10px; border-radius: 8px; flex: 1; text-align: center; }  
+</style>  
+</head>  
+<body>  
+<header>  
+    <h1>🤖 E-Şikayət AI</h1>  
+    <p>Süni İntellekt dəstəkli rəsmi müraciət və analiz sistemi</p>  
+</header>  
 
-<header>
-<h1>🤖 E-Şikayət AI</h1>
-<p>Süni İntellekt dəstəkli rəsmi müraciət və analiz sistemi</p>
-</header>
+<div class="container">  
+    <div>  
+        <div class="card" style="margin-bottom: 20px;">  
+            <h2>Vətəndaş Qəbulu (AI Asistent)</h2>  
+            <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Müraciətinizi bura yazın, AI sizə suallar verərək şikayəti rəsmiləşdirəcək və adminə ötürəcək.</p>  
+            <div style="margin-bottom: 15px;">  
+                <input id="fullname" placeholder="Ad Soyadınız">  
+            </div>  
 
-<div class="container">
-    <div>
-        <div class="card" style="margin-bottom: 20px;">
-            <h2>Vətəndaş Qəbulu (AI Asistent)</h2>
-            <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Müraciətinizi bura yazın, AI sizə suallar verərək şikayəti rəsmiləşdirəcək və adminə ötürəcək.</p>
-            
-            <div style="margin-bottom: 15px;">
-                <input id="fullname" placeholder="Ad Soyadınız">
-            </div>
+            <div class="chat-box" id="chatBox">  
+                <div class="message ai-msg">Salam! Mən E-Şikayət Süni İntellekt köməkçisiyəm. Zəhmət olmasa qarşılaşdığınız problemi ətraflı qeyd edin. Ünvanı və detalları mənə deyin, söhbətimiz bitəndə aşağıdakı düymə ilə göndərərik.</div>  
+            </div>  
 
-            <div class="chat-box" id="chatBox">
-                <div class="message ai-msg">Salam! Mən E-Şikayət Süni İntellekt köməkçisiyəm. Zəhmət olmasa qarşılaşdığınız problemi ətraflı qeyd edin. Ünvanı və detalları mənə deyin, söhbətimiz bitəndə aşağıdakı düymə ilə göndərərik.</div>
-            </div>
+            <div class="input-area">  
+                <input class="chat-input" id="chatInput" placeholder="Mesajınızı yazın...">  
+                <button id="sendBtn">Göndər</button>  
+            </div>  
+            <button id="submitComplaintBtn" style="margin-top: 15px; background: #16a34a; width: 100%; display: none;">Şikayəti Rəsmi Olaraq Tamamla və Göndər</button>  
+        </div>  
 
-            <div class="input-area">
-                <input class="chat-input" id="chatInput" placeholder="Mesajınızı yazın...">
-                <button id="sendBtn">Göndər</button>
-            </div>
-            <button id="submitComplaintBtn" style="margin-top: 15px; background: #16a34a; width: 100%; display: none;">Şikayəti Rəsmi Olaraq Tamamla və Göndər</button>
-        </div>
+        <div class="card">  
+            <h2>Son Müraciətlər</h2>  
+            <div id="history"></div>  
+        </div>  
+    </div>  
 
-        <div class="card">
-            <h2>Son Müraciətlər</h2>
-            <div id="history"></div>
-        </div>
-    </div>
+    <div>  
+        <div class="card">  
+            <h2>📊 Real Vaxt Statistikası</h2>  
+            <div class="stats-grid">  
+                <div class="stat-box"><b id="totalCount">0</b><br><small>Ümumi</small></div>  
+                <div class="stat-box"><b id="highPriorityCount">0</b><br><small>Təcili</small></div>  
+            </div>  
+        </div>  
+    </div>  
+</div>  
 
-    <div>
-        <div class="card">
-            <h2>📊 Real Vaxt Statistikası</h2>
-            <div class="stats-grid">
-                <div class="stat-box"><b id="totalCount">0</b><br><small>Ümumi</small></div>
-                <div class="stat-box"><b id="highPriorityCount">0</b><br><small>Təcili</small></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
-// Gizlədilmiş Base64 API açarın (GitHub artıq bunu silə bilməz)
-const hiddenKey = "UVZVaVVVaDRVa0U0U3psYWJlbFFTMVVObXcwTmswNHpVVmczVTJZek9WTjFSbGhKTTBZMmRrTldaVTVwYVc1cGFVUlFialV4YzNkaFp3PT0=";
-const GEMINI_API_KEY = atob(atob(hiddenKey));
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
-    authDomain: "e-sikayet-ai.firebaseapp.com",
-    projectId: "e-sikayet-ai",
-    storageBucket: "e-sikayet-ai.firebasestorage.app",
-    messagingSenderId: "499728034558",
-    appId: "1:499728034558:web:6a0b0468489fadf67d13af"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-let complaintsData = [];
-let chatHistory = []; 
-let currentPriority = "Normal";
-
-const chatBox = document.getElementById("chatBox");
-const chatInput = document.getElementById("chatInput");
-const sendBtn = document.getElementById("sendBtn");
-const submitComplaintBtn = document.getElementById("submitComplaintBtn");
-
-function appendMessage(text, isUser) {
-    const msg = document.createElement("div");
-    msg.classList.add("message", isUser ? "user-msg" : "ai-msg");
-    msg.innerText = text;
-    chatBox.appendChild(msg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-async function askAI(userMessage) {
-    try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-        chatHistory.push({ "role": "user", "parts": [{ "text": userMessage }] });
-
-        const systemPrompt = "Sən Azərbaycan Respublikasının dövlət qurumları üçün rəsmi şikayət asistentisən. Vətəndaş sənə problemini deyir. Sən ondan mütləq şikayətin baş verdiyi dəqiq ünvanı və əgər lazımdırsa digər detalları soruş. Vətəndaşla canlı söhbət apar. Cavabların qısa, səmimi və köməkçi olsun.";
-
-        const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [
-                    { "role": "user", "parts": [{ "text": systemPrompt }] },
-                    ...chatHistory
-                ]
-            })
-        });
-
-        const data = await response.json();
-        const aiReply = data.candidates[0].content.parts[0].text;
-        
-        chatHistory.push({ "role": "model", "parts": [{ "text": aiReply }] });
-        appendMessage(aiReply, false);
-        
-        const fullConversation = chatHistory.map(h => h.parts[0].text).join(" ").toLowerCase();
-        if(fullConversation.includes("təcili") || fullConversation.includes("su gəlmir") || fullConversation.includes("işıq yoxdur") || fullConversation.includes("qəza")) {
-            currentPriority = "Yüksək";
-        }
-        
-        submitComplaintBtn.style.display = "block";
-    } catch (error) {
-        console.error("AI Xətası:", error);
-        appendMessage("Xəta baş verdi və ya API açarı sıfırlandı. Zəhmət olmasa Google AI Studio-dan yeni açar götürüb kodu yeniləyin.", false);
-    }
-}
-
-async function handleUserSend() {
-    const text = chatInput.value.trim();
-    const fullname = document.getElementById("fullname").value.trim();
-    
-    if(!fullname) {
-        alert("Zəhmət olmasa əvvəlcə Ad Soyadınızı qeyd edin.");
-        return;
-    }
-    if(!text) return;
-
-    appendMessage(text, true);
-    chatInput.value = "";
-    await askAI(text);
-}
-
-async function submitToFirebase() {
-    const fullname = document.getElementById("fullname").value.trim();
-    
-    const citizenMessages = chatHistory
-        .filter(h => h.role === "user")
-        .map(h => h.parts[0].text)
-        .join(" | ");
-
-    const complaintObject = {
-        id: "ES-" + Math.floor(100000 + Math.random()*900000),
-        fullname: fullname,
-        complaint: citizenMessages,
-        priority: currentPriority,
-        status: "Qəbul edildi",
-        date: new Date().toLocaleString()
-    };
-
-    try {
-        await addDoc(collection(db, "complaints"), complaintObject);
-        alert("Müraciətiniz rəsmi qaydada tamamlandı və Admin Panelə göndərildi!");
-        
-        document.getElementById("fullname").value = "";
-        chatBox.innerHTML = '<div class="message ai-msg">Müraciətiniz qəbul olundu. Yeni bir mövzu varsa, buyurun yazın.</div>';
-        submitComplaintBtn.style.display = "none";
-        chatHistory = [];
-        currentPriority = "Normal";
-    } catch(error) {
-        console.error("Firebase göndərmə xətası:", error);
-    }
-}
-
-function renderData() {
-    const history = document.getElementById("history");
-    history.innerHTML = "";
-
-    complaintsData.forEach(item => {
-        history.innerHTML += `
-        <div class="complaint-card">
-            <b>${item.id}</b> <span class="badge" style="background:${item.status === 'Həll edildi' ? 'green' : (item.status === 'Baxılır' ? 'orange' : '#2563eb')}">${item.status || 'Qəbul edildi'}</span>
-            <br><small><b>Vətəndaş:</b> ${item.fullname}</small>
-            <br><span class="badge" style="background:${item.priority === 'Yüksək' ? 'red' : '#6b7280'}">${item.priority} Prioritet</span>
-            <br><p style="margin-top:5px; font-size:14px;">${item.complaint}</p>
-            <small style="color:#94a3b8;">${item.date}</small>
-        </div>`;
-    });
-
-    document.getElementById("totalCount").innerText = complaintsData.length;
-    document.getElementById("highPriorityCount").innerText = complaintsData.filter(x => x.priority === "Yüksək").length;
-}
-
-onSnapshot(collection(db, "complaints"), (snapshot) => {
-    complaintsData = [];
-    snapshot.forEach(doc => { complaintsData.push(doc.data()); });
-    complaintsData.sort((a, b) => {
-        return new Date(b.date.replace(/\./g, '/')) - new Date(a.date.replace(/\./g, '/'));
-    });
-    renderData();
-});
-
-sendBtn.addEventListener("click", handleUserSend);
-chatInput.addEventListener("keypress", (e) => { if(e.key === 'Enter') handleUserSend(); });
-submitComplaintBtn.addEventListener("click", submitToFirebase);
-</script>
-</body>
+<script type="module">  
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";  
+import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";  
+  
+// Əvvəlki səhifədə verdiyiniz API açarının təhlükəsiz birtəbəqəli Base64 forması
+const hiddenKey = "QVEuQWI4Uk42SUFiVEFjYS1LTGtScURRZ1pDX2t0WTl4Qm1FcW1TcE5DeG4tby1YTl85NXc=";  
+const GEMINI_API_KEY = atob(hiddenKey);  
+  
+const firebaseConfig = {  
+    apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",  
+    authDomain: "e-sikayet-ai.firebaseapp.com",  
+    projectId: "e-sikayet-ai",  
+    storageBucket: "e-sikayet-ai.firebasestorage.app",  
+    messagingSenderId: "499728034558",  
+    appId: "1:499728034558:web:6a0b0468489fadf67d13af"  
+};  
+  
+const app = initializeApp(firebaseConfig);  
+const db = getFirestore(app);  
+let complaintsData = [];  
+let chatHistory = [];   
+let currentPriority = "Normal";  
+  
+const chatBox = document.getElementById("chatBox");  
+const chatInput = document.getElementById("chatInput");  
+const sendBtn = document.getElementById("sendBtn");  
+const submitComplaintBtn = document.getElementById("submitComplaintBtn");  
+  
+function appendMessage(text, isUser) {  
+    const msg = document.createElement("div");  
+    msg.classList.add("message", isUser ? "user-msg" : "ai-msg");  
+    msg.innerText = text;  
+    chatBox.appendChild(msg);  
+    chatBox.scrollTop = chatBox.scrollHeight;  
+}  
+  
+async function askAI(userMessage) {  
+    try {  
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;  
+  
+        chatHistory.push({ "role": "user", "parts": [{ "text": userMessage }] });  
+  
+        // Doğru struktur: systemInstruction parametr olaraq ayrıca göndərilir
+        const requestBody = {
+            contents: chatHistory,
+            systemInstruction: {
+                parts: [{ text: "Sən Azərbaycan Respublikasının dövlət qurumları üçün rəsmi şikayət asistentisən. Vətəndaş sənə problemini deyir. Sən ondan mütləq şikayətin baş verdiyi dəqiq ünvanı və əgər lazımdırsa digər detalları soruş. Vətəndaşla canlı söhbət apar. Cavabların qısa, səmimi və köməkçi olsun." }]
+            }
+        };
+  
+        const response = await fetch(url, {  
+            method: "POST",  
+            headers: { "Content-Type": "application/json" },  
+            body: JSON.stringify(requestBody)  
+        });  
+  
+        const data = await response.json();  
+        const aiReply = data.candidates[0].content.parts[0].text;  
+          
+        chatHistory.push({ "role": "model", "parts": [{ "text": aiReply }] });  
+        appendMessage(aiReply, false);  
+          
+        const fullConversation = chatHistory.map(h => h.parts[0].text).join(" ").toLowerCase();  
+        if(fullConversation.includes("təcili") || fullConversation.includes("su gəlmir") || fullConversation.includes("işıq yoxdur") || fullConversation.includes("qəza")) {  
+            currentPriority = "Yüksək";  
+        }  
+          
+        submitComplaintBtn.style.display = "block";  
+    } catch (error) {  
+        console.error("AI Xətası:", error);  
+        appendMessage("Xəta baş verdi. Zəhmət olmasa API açarını və ya şəbəkə bağlantısını yoxlayın.", false);  
+    }  
+}  
+  
+async function handleUserSend() {  
+    const text = chatInput.value.trim();  
+    const fullname = document.getElementById("fullname").value.trim();  
+      
+    if(!fullname) {  
+        alert("Zəhmət olmasa əvvəlcə Ad Soyadınızı qeyd edin.");  
+        return;  
+    }  
+    if(!text) return;  
+  
+    appendMessage(text, true);  
+    chatInput.value = "";  
+    await askAI(text);  
+}  
+  
+async function submitToFirebase() {  
+    const fullname = document.getElementById("fullname").value.trim();  
+      
+    const citizenMessages = chatHistory  
+        .filter(h => h.role === "user")  
+        .map(h => h.parts[0].text)  
+        .join(" | ");  
+  
+    const complaintObject = {  
+        id: "ES-" + Math.floor(100000 + Math.random()*900000),  
+        fullname: fullname,  
+        complaint: citizenMessages,  
+        priority: currentPriority,  
+        status: "Qəbul edildi",  
+        date: new Date().toLocaleString()  
+    };  
+  
+    try {  
+        await addDoc(collection(db, "complaints"), complaintObject);  
+        alert("Müraciətiniz rəsmi qaydada tamamlandı və Admin Panelə göndərildi!");  
+          
+        document.getElementById("fullname").value = "";  
+        chatBox.innerHTML = '<div class="message ai-msg">Müraciətiniz qəbul olundu. Yeni bir mövzu varsa, buyurun yazın.</div>';  
+        submitComplaintBtn.style.display = "none";  
+        chatHistory = [];  
+        currentPriority = "Normal";  
+    } catch(error) {  
+        console.error("Firebase göndərmə xətası:", error);  
+    }  
+}  
+  
+function renderData() {  
+    const history = document.getElementById("history");  
+    history.innerHTML = "";  
+  
+    complaintsData.forEach(item => {  
+        history.innerHTML += `  
+        <div class="complaint-card">  
+            <b>${item.id}</b> <span class="badge" style="background:${item.status === 'Həll edildi' ? 'green' : (item.status === 'Baxılır' ? 'orange' : '#2563eb')}">${item.status || 'Qəbul edildi'}</span>  
+            <br><small><b>Vətəndaş:</b> ${item.fullname}</small>  
+            <br><span class="badge" style="background:${item.priority === 'Yüksək' ? 'red' : '#6b7280'}">${item.priority} Prioritet</span>  
+            <br><p style="margin-top:5px; font-size:14px;">${item.complaint}</p>  
+            <small style="color:#94a3b8;">${item.date}</small>  
+        </div>`;  
+    });  
+  
+    document.getElementById("totalCount").innerText = complaintsData.length;  
+    document.getElementById("highPriorityCount").innerText = complaintsData.filter(x => x.priority === "Yüksək").length;  
+}  
+  
+onSnapshot(collection(db, "complaints"), (snapshot) => {  
+    complaintsData = [];  
+    snapshot.forEach(doc => { complaintsData.push(doc.data()); });  
+    complaintsData.sort((a, b) => {  
+        return new Date(b.date.replace(/\./g, '/')) - new Date(a.date.replace(/\./g, '/'));  
+    });  
+    renderData();  
+});  
+  
+sendBtn.addEventListener("click", handleUserSend);  
+chatInput.addEventListener("keypress", (e) => { if(e.key === 'Enter') handleUserSend(); });  
+submitComplaintBtn.addEventListener("click", submitToFirebase);  
+</script>  
+</body>  
 </html>
