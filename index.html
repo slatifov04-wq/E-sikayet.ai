@@ -536,6 +536,11 @@ updateStats();
 </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
@@ -548,8 +553,17 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-console.log("Firebase qoşuldu");
+window.saveComplaintToFirebase = async function(data){
+  try{
+    await addDoc(collection(db,"complaints"), data);
+    console.log("Firebase yazıldı");
+  }catch(error){
+    console.error(error);
+  }
+}
+</script>);
 </script>
 </body>
 </html>
