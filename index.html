@@ -6,42 +6,55 @@
 <title>E-Şikayət AI</title>
 
 <style>
-body{
-font-family:Arial,sans-serif;
-background:#f5f5f5;
+*{
 margin:0;
 padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f4f6f9;
 }
 
 header{
-background:#6c3df4;
+background:#2563eb;
 color:white;
 padding:20px;
 text-align:center;
 }
 
 .container{
-max-width:500px;
-margin:30px auto;
+max-width:900px;
+margin:20px auto;
+padding:15px;
+}
+
+.card{
 background:white;
 padding:20px;
 border-radius:15px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
+box-shadow:0 2px 10px rgba(0,0,0,0.1);
+margin-bottom:20px;
 }
 
-input,textarea,button{
+input, textarea{
 width:100%;
 padding:12px;
 margin-top:10px;
+margin-bottom:10px;
+border:1px solid #ddd;
 border-radius:10px;
-border:1px solid #ccc;
-box-sizing:border-box;
 }
 
 button{
-background:#6c3df4;
+width:100%;
+padding:14px;
+background:#2563eb;
 color:white;
 border:none;
+border-radius:10px;
+font-size:16px;
 cursor:pointer;
 }
 
@@ -50,11 +63,19 @@ opacity:0.9;
 }
 
 .result{
-margin-top:20px;
+margin-top:15px;
 padding:15px;
-background:#f0f0f0;
+background:#eef4ff;
 border-radius:10px;
 white-space:pre-wrap;
+}
+
+.complaint-card{
+background:#fafafa;
+padding:12px;
+border-radius:10px;
+margin-top:10px;
+border-left:5px solid #2563eb;
 }
 </style>
 </head>
@@ -62,42 +83,190 @@ white-space:pre-wrap;
 <body>
 
 <header>
-<h1>E-Şikayət AI</h1>
-<p>Şikayətinizi AI ilə hazırlayın</p>
+<h1>🤖 E-Şikayət AI</h1>
+<p>AI əsaslı müraciət köməkçisi</p>
 </header>
 
 <div class="container">
 
-<input id="name" placeholder="Ad Soyad">
+<div class="card">
 
-<textarea id="complaint" rows="6" placeholder="Şikayətinizi yazın"></textarea>
+<h2>Yeni Şikayət</h2>
 
-<button onclick="generateComplaint()">Şikayət Hazırla</button>
+<input
+id="fullname"
+placeholder="Ad Soyad">
 
-<div class="result" id="result"></div>
+<textarea
+id="complaint"
+rows="6"
+placeholder="Probleminizi yazın..."></textarea>
+
+<button onclick="createComplaint()">
+Şikayət Hazırla
+</button>
+
+<div id="result" class="result"></div>
+
+</div>
+
+<div class="card">
+
+<h2>Müraciətlərim</h2>
+
+<div id="history"></div>
+
+</div>
 
 </div>
 
 <script>
-function generateComplaint(){
 
-const name=document.getElementById("name").value;
-const complaint=document.getElementById("complaint").value;
+function detectInstitution(text){
 
-const text=
-`Hörmətli qurum,
+text=text.toLowerCase();
+
+if(text.includes("işıq"))
+return "Azərişıq";
+
+if(text.includes("qaz"))
+return "Azəriqaz";
+
+if(text.includes("su"))
+return "Azərsu";
+
+if(text.includes("internet"))
+return "İnternet Provayderi";
+
+if(text.includes("bank"))
+return "Mərkəzi Bank";
+
+if(text.includes("polis"))
+return "DİN";
+
+if(text.includes("məktəb"))
+return "Təhsil Nazirliyi";
+
+if(text.includes("xəstəxana"))
+return "Səhiyyə Nazirliyi";
+
+return "Aidiyyəti Dövlət Qurumu";
+}
+
+function generateID(){
+
+return "ES-" +
+Math.floor(
+100000 + Math.random()*900000
+);
+
+}
+
+function createComplaint(){
+
+const name =
+document.getElementById("fullname").value;
+
+const complaint =
+document.getElementById("complaint").value;
+
+if(!name || !complaint){
+
+alert("Bütün sahələri doldurun");
+
+return;
+}
+
+const institution =
+detectInstitution(complaint);
+
+const id =
+generateID();
+
+const complaintText =
+`Şikayət ID: ${id}
+
+Qurum: ${institution}
+
+Status: Qəbul edildi
+
+Hörmətli ${institution} rəhbərliyi.
 
 Mən ${name} aşağıdakı məsələ ilə bağlı müraciət edirəm:
 
 ${complaint}
 
-Xahiş edirəm məsələ araşdırılsın və qanunvericiliyə uyğun tədbir görülsün.
+Xahiş edirəm problemin araşdırılması və həll olunması üçün tədbir görülsün.
 
 Hörmətlə,
 ${name}`;
 
-document.getElementById("result").innerText=text;
+document.getElementById("result").innerText =
+complaintText;
+
+let data =
+JSON.parse(
+localStorage.getItem("complaints")
+|| "[]"
+);
+
+data.unshift({
+
+id:id,
+institution:institution,
+complaint:complaint,
+status:"Qəbul edildi",
+date:new Date().toLocaleString()
+
+});
+
+localStorage.setItem(
+"complaints",
+JSON.stringify(data)
+);
+
+loadHistory();
 }
+
+function loadHistory(){
+
+let data =
+JSON.parse(
+localStorage.getItem("complaints")
+|| "[]"
+);
+
+let html="";
+
+data.forEach(item=>{
+
+html += `
+<div class="complaint-card">
+
+<b>${item.id}</b><br>
+
+Qurum:
+${item.institution}<br>
+
+Status:
+${item.status}<br>
+
+Tarix:
+${item.date}<br><br>
+
+${item.complaint}
+
+</div>
+`;
+
+});
+
+document.getElementById("history").innerHTML =
+html;
+}
+
+loadHistory();
+
 </script>
 
 </body>
