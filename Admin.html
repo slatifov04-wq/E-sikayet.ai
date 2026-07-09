@@ -5,14 +5,78 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Panel</title>
 
+<style>
+body{
+background:#f4f6f9;
+font-family:Arial,sans-serif;
+padding:20px;
+}
+
+h1{
+text-align:center;
+}
+
+.card{
+background:white;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+button{
+padding:8px 12px;
+margin:5px;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+.pending{
+background:orange;
+color:white;
+}
+
+.done{
+background:green;
+color:white;
+}
+
+.delete{
+background:red;
+color:white;
+}
+
+.status{
+display:inline-block;
+padding:5px 10px;
+border-radius:20px;
+background:#2563eb;
+color:white;
+margin-top:5px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>📋 Admin Panel</h1>
+
+<div id="list">Yüklənir...</div>
+
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
 import {
 getFirestore,
 collection,
-getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+getDocs,
+updateDoc,
+deleteDoc,
+doc
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
@@ -34,55 +98,90 @@ collection(db,"complaints")
 
 let html="";
 
-snap.forEach(doc=>{
+snap.forEach(item=>{
 
-const d = doc.data();
+const d = item.data();
+const docId = item.id;
 
 html += `
-<div style="
-background:white;
-padding:15px;
-margin:10px;
-border-radius:10px;
-">
-<h3>${d.id}</h3>
-<p><b>Ad:</b> ${d.fullname}</p>
-<p><b>Şikayət:</b> ${d.complaint}</p>
-<p><b>Prioritet:</b> ${d.priority}</p>
-<p><b>Tarix:</b> ${d.date}</p>
+
+<div class="card">
+
+<h3>${d.id || "-"}</h3>
+
+<p><b>Ad:</b> ${d.fullname || "-"}</p>
+
+<p><b>Şikayət:</b><br>${d.complaint || "-"}</p>
+
+<p><b>Prioritet:</b> ${d.priority || "Normal"}</p>
+
+<p><b>Tarix:</b> ${d.date || "-"}</p>
+
+<p>
+<span class="status">
+${d.status || "Qəbul edildi"}
+</span>
+</p>
+
+<button
+class="pending"
+onclick="updateStatus('${docId}','Baxılır')">
+Baxılır
+</button>
+
+<button
+class="done"
+onclick="updateStatus('${docId}','Həll edildi')">
+Həll edildi
+</button>
+
+<button
+class="delete"
+onclick="deleteComplaint('${docId}')">
+Sil
+</button>
+
 </div>
+
 `;
 
 });
 
-document.getElementById("list").innerHTML = html;
+document.getElementById("list").innerHTML =
+html;
 
 }
 
-window.onload = loadComplaints;
+window.updateStatus = async function(id,status){
+
+await updateDoc(
+doc(db,"complaints",id),
+{
+status:status
+}
+);
+
+loadComplaints();
+
+}
+
+window.deleteComplaint = async function(id){
+
+if(!confirm("Silmək istəyirsən?")){
+return;
+}
+
+await deleteDoc(
+doc(db,"complaints",id)
+);
+
+loadComplaints();
+
+}
+
+loadComplaints();
 
 </script>
-
-<style>
-
-body{
-background:#f4f6f9;
-font-family:Arial;
-}
-
-h1{
-text-align:center;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<h1>Admin Panel</h1>
-
-<div id="list"></div>
 
 </body>
 </html>
