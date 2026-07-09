@@ -4,88 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>E-Şikayət AI</title>
-
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
-
-body{
-background:#f4f6f9;
-}
-
-header{
-background:#2563eb;
-color:white;
-padding:25px;
-text-align:center;
-}
-
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
-}
-
-.card{
-background:white;
-padding:20px;
-border-radius:15px;
-box-shadow:0 2px 10px rgba(0,0,0,.1);
-margin-bottom:20px;
-}
-
-input,textarea,select{
-width:100%;
-padding:12px;
-margin-top:10px;
-margin-bottom:10px;
-border:1px solid #ddd;
-border-radius:10px;
-}
-
-button{
-width:100%;
-padding:14px;
-background:#2563eb;
-color:white;
-border:none;
-border-radius:10px;
-cursor:pointer;
-margin-top:10px;
-}
-
-.result{
-background:#eef4ff;
-padding:15px;
-border-radius:10px;
-margin-top:15px;
-white-space:pre-wrap;
-}
-
-.complaint-card{
-background:#fafafa;
-padding:15px;
-border-left:5px solid #2563eb;
-border-radius:10px;
-margin-top:10px;
-}
-
-.badge{
-display:inline-block;
-padding:4px 10px;
-border-radius:20px;
-background:#2563eb;
-color:white;
-font-size:12px;
-margin-top:5px;
-}
+*{ margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
+body{ background:#f4f6f9; }
+header{ background:#2563eb; color:white; padding:25px; text-align:center; }
+.container{ max-width:1100px; margin:auto; padding:20px; }
+.card{ background:white; padding:20px; border-radius:15px; box-shadow:0 2px 10px rgba(0,0,0,.1); margin-bottom:20px; }
+input,textarea,select{ width:100%; padding:12px; margin-top:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px; }
+button{ width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:10px; cursor:pointer; margin-top:10px; }
+.result{ background:#eef4ff; padding:15px; border-radius:10px; margin-top:15px; white-space:pre-wrap; }
+.complaint-card{ background:#fafafa; padding:15px; border-left:5px solid #2563eb; border-radius:10px; margin-top:10px; }
+.badge{ display:inline-block; padding:4px 10px; border-radius:20px; background:#2563eb; color:white; font-size:12px; margin-top:5px; }
 </style>
 </head>
-
 <body>
 
 <header>
@@ -94,38 +25,33 @@ margin-top:5px;
 </header>
 
 <div class="container">
+    <div class="card">
+        <h2>Yeni Şikayət</h2>
+        <input id="fullname" placeholder="Ad Soyad">
+        <textarea id="complaint" rows="6" placeholder="Probleminizi yazın"></textarea>
+        <select id="urgency">
+            <option>Normal</option>
+            <option>Təcili</option>
+        </select>
+        <button id="submitBtn">Şikayət Göndər</button>
+        <div id="result" class="result"></div>
+    </div>
 
-<div class="card">
-<h2>Yeni Şikayət</h2>
-<input id="fullname" placeholder="Ad Soyad">
-<textarea id="complaint" rows="6" placeholder="Probleminizi yazın"></textarea>
+    <div class="card">
+        <h2>📊 Statistika</h2>
+        <p id="totalCount">Ümumi müraciət: 0</p>
+        <p id="highPriorityCount">Yüksək prioritet: 0</p>
+    </div>
 
-<select id="urgency">
-<option>Normal</option>
-<option>Təcili</option>
-</select>
-
-<button id="submitBtn">Şikayət Göndər</button>
-<div id="result" class="result"></div>
+    <div class="card">
+        <h2>Müraciətlər</h2>
+        <div id="history"></div>
+    </div>
 </div>
 
-<div class="card">
-<h2>📊 Statistika</h2>
-<p id="totalCount">Ümumi müraciət: 0</p>
-<p id="highPriorityCount">Yüksək prioritet: 0</p>
-</div>
-
-<div class="card">
-<h2>Müraciətlər</h2>
-<div id="history"></div>
-</div>
-
-</div>
-
-<!-- Vahid Modul Script (Firebase və Funksiyalar bir yerdə) -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
@@ -138,8 +64,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-// Qlobal massiv (statistika və render üçün)
 let complaintsData = [];
 
 function generateID(){
@@ -147,15 +71,12 @@ function generateID(){
 }
 
 function detectPriority(text, urgencySelect){
-    const lowerText = text.toLowerCase();
-    // Həm mətndə "təcili" sözü varsa, həm də select menyudan "Təcili" seçilibsə Yüksək təyin et
-    if(lowerText.includes("təcili") || urgencySelect === "Təcili"){
+    if(text.toLowerCase().includes("təcili") || urgencySelect === "Təcili"){
         return "Yüksək";
     }
     return "Normal";
 }
 
-// Şikayət yaratma funksiyası
 async function createComplaint(){
     const fullname = document.getElementById("fullname").value.trim();
     const complaint = document.getElementById("complaint").value.trim();
@@ -179,22 +100,15 @@ async function createComplaint(){
     };
 
     try {
-        // Firebase-ə yazırıq
         await addDoc(collection(db, "complaints"), complaintObject);
-        
-        // Ekranda nəticəni göstəririk
         document.getElementById("result").innerText = `Şikayət ID: ${id}\nStatus: Qəbul edildi\nAd Soyad: ${fullname}\nŞikayət:\n${complaint}`;
-        
-        // Formu təmizləyirik
         document.getElementById("fullname").value = "";
         document.getElementById("complaint").value = "";
     } catch(error) {
-        console.error("Xəta baş verdi: ", error);
-        alert("Xəta: Məlumat bazaya yazıla bilmədi.");
+        console.error("Xəta:", error);
     }
 }
 
-// Məlumatları ekrana yazdırmaq və statistika
 function renderData() {
     const history = document.getElementById("history");
     history.innerHTML = "";
@@ -203,39 +117,25 @@ function renderData() {
         history.innerHTML += `
         <div class="complaint-card">
             <b>${item.id}</b> <span class="badge" style="background:${item.status === 'Həll edildi' ? 'green' : (item.status === 'Baxılır' ? 'orange' : '#2563eb')}">${item.status || 'Qəbul edildi'}</span>
-            <br>
-            ${item.fullname}
-            <br>
+            <br>${item.fullname}<br>
             <span class="badge" style="background:${item.priority === 'Yüksək' ? 'red' : '#6b7280'}">${item.priority}</span>
-            <br><br>
-            ${item.complaint}
-            <br><br>
+            <br><br>${item.complaint}<br><br>
             <small>${item.date}</small>
         </div>`;
     });
 
-    // Statistikanın yenilənməsi
     document.getElementById("totalCount").innerText = "Ümumi müraciət: " + complaintsData.length;
-    const high = complaintsData.filter(x => x.priority === "Yüksək").length;
-    document.getElementById("highPriorityCount").innerText = "Yüksək prioritet: " + high;
+    document.getElementById("highPriorityCount").innerText = "Yüksək prioritet: " + complaintsData.filter(x => x.priority === "Yüksək").length;
 }
 
-// Real-time (canlı) verilənlər bazası dinləyicisi (onSnapshot)
-// Bu funksiya həm admin paneldən silinən/dəyişən məlumatları, həm də yeni müraciətləri anında yeniləyir
 onSnapshot(collection(db, "complaints"), (snapshot) => {
     complaintsData = [];
-    snapshot.forEach(doc => {
-        complaintsData.push(doc.data());
-    });
-    // Tarixə görə sıralama (ən yeni üstə gəlsin)
+    snapshot.forEach(doc => { complaintsData.push(doc.data()); });
     complaintsData.sort((a, b) => new Date(b.date) - new Date(a.date));
     renderData();
 });
 
-// Düyməyə klik hadisəsini bağlayırıq
 document.getElementById("submitBtn").addEventListener("click", createComplaint);
-
 </script>
-
 </body>
 </html>
