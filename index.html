@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-Şikayət AI</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f4f6f9;
+padding:20px;
+margin:0;
+}
+
+.container{
+max-width:600px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+h1{
+text-align:center;
+}
+
+input,textarea{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:1px solid #ddd;
+border-radius:8px;
+box-sizing:border-box;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#2563eb;
+color:white;
+border:none;
+border-radius:8px;
+font-size:16px;
+cursor:pointer;
+}
+
+.result{
+margin-top:20px;
+padding:15px;
+background:#f1f5f9;
+border-radius:8px;
+display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📋 E-Şikayət AI</h1>
+
+<input id="fullname" placeholder="Ad Soyad">
+
+<textarea id="complaint"
+placeholder="Şikayətinizi yazın..."
+rows="6"></textarea>
+
+<button onclick="sendComplaint()">
+Göndər
+</button>
+
+<div id="result" class="result"></div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+addDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
+authDomain: "e-sikayet-ai.firebaseapp.com",
+projectId: "e-sikayet-ai",
+storageBucket: "e-sikayet-ai.firebasestorage.app",
+messagingSenderId: "499728034558",
+appId: "1:499728034558:web:6a0b0468489fadf67d13af"
+
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.sendComplaint = async function(){
+
+const fullname =
+document.getElementById("fullname").value;
+
+const complaint =
+document.getElementById("complaint").value;
+
+if(!fullname || !complaint){
+alert("Bütün xanaları doldurun");
+return;
+}
+
+const priority =
+complaint.length > 100 ?
+"Yüksək" :
+"Normal";
+
+const ticket =
+"ES-" +
+Math.floor(
+100000 + Math.random()*900000
+);
+
+await addDoc(
+collection(db,"complaints"),
+{
+id:ticket,
+fullname,
+complaint,
+priority,
+status:"Qəbul edildi",
+date:new Date().toLocaleString("az-AZ")
+}
+);
+
+document.getElementById("result").style.display =
+"block";
+
+document.getElementById("result").innerHTML =
+`
+<b>Şikayət qəbul edildi</b><br><br>
+Kod: ${ticket}<br>
+Prioritet: ${priority}
+`;
+
+document.getElementById("fullname").value="";
+document.getElementById("complaint").value="";
+};
+
+</script>
+
+</body>
+</html>
