@@ -41,14 +41,6 @@ input,select{ width:100%; padding:10px; margin-bottom:15px; border-radius:8px; b
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-const username = prompt("İstifadəçi adı:");
-const password = prompt("Şifrə:");
-
-if(username !== "admin" || password !== "123456"){
-    document.body.innerHTML = "<h1 style='text-align:center;margin-top:100px;color:red'>Giriş qadağandır!</h1>";
-    throw new Error("Unauthorized");
-}
-
 const firebaseConfig = {
     apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
     authDomain: "e-sikayet-ai.firebaseapp.com",
@@ -71,7 +63,7 @@ async function loadComplaints(){
             complaints.push({ dbId: docSnap.id, ...docSnap.data() });
         });
 
-        // Burada tarixləri müqayisə edib ən yeniləri ən üstə çıxarırıq
+        // Tarixə görə sıralama (Ən yeni şikayətlər ən üstə)
         complaints.sort((a, b) => {
             const dateA = a.date ? new Date(a.date.replace(/\./g, '/')) : 0;
             const dateB = b.date ? new Date(b.date.replace(/\./g, '/')) : 0;
