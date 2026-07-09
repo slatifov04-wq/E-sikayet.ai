@@ -3,364 +3,86 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>E-Şikayət AI</title>
+<title>Admin Panel</title>
 
-<style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
+<script type="module">
 
-body{
-background:#f4f6f9;
-}
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+getFirestore,
+collection,
+getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-header{
-background:#2563eb;
-color:white;
-padding:25px;
-text-align:center;
-}
+const firebaseConfig = {
+apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
+authDomain: "e-sikayet-ai.firebaseapp.com",
+projectId: "e-sikayet-ai",
+storageBucket: "e-sikayet-ai.firebasestorage.app",
+messagingSenderId: "499728034558",
+appId: "1:499728034558:web:6a0b0468489fadf67d13af"
+};
 
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
-}
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-.card{
+async function loadComplaints(){
+
+const snap = await getDocs(
+collection(db,"complaints")
+);
+
+let html="";
+
+snap.forEach(doc=>{
+
+const d = doc.data();
+
+html += `
+<div style="
 background:white;
-padding:20px;
-border-radius:15px;
-box-shadow:0 2px 10px rgba(0,0,0,.1);
-margin-bottom:20px;
-}
-
-input,textarea,select{
-width:100%;
-padding:12px;
-margin-top:10px;
-margin-bottom:10px;
-border:1px solid #ddd;
-border-radius:10px;
-}
-
-button{
-width:100%;
-padding:14px;
-background:#2563eb;
-color:white;
-border:none;
-border-radius:10px;
-cursor:pointer;
-margin-top:10px;
-}
-
-.result{
-background:#eef4ff;
 padding:15px;
+margin:10px;
 border-radius:10px;
-margin-top:15px;
-white-space:pre-wrap;
-}
-
-.complaint-card{
-background:#fafafa;
-padding:15px;
-border-left:5px solid #2563eb;
-border-radius:10px;
-margin-top:10px;
-}
-
-.badge{
-display:inline-block;
-padding:4px 10px;
-border-radius:20px;
-background:#2563eb;
-color:white;
-font-size:12px;
-margin-top:5px;
-}
-</style>
-</head>
-
-<body>
-
-<header>
-<h1>🤖 E-Şikayət AI</h1>
-<p>Şikayətinizi rəsmi müraciətə çevirin</p>
-</header>
-
-<div class="container">
-
-<div class="card">
-
-<h2>Yeni Şikayət</h2>
-
-<input id="fullname" placeholder="Ad Soyad">
-
-<textarea
-id="complaint"
-rows="6"
-placeholder="Probleminizi yazın">
-</textarea>
-
-<select id="urgency">
-<option>Normal</option>
-<option>Təcili</option>
-</select>
-
-<button onclick="createComplaint()">
-Şikayət Göndər
-</button>
-
-<div id="result" class="result"></div>
-
+">
+<h3>${d.id}</h3>
+<p><b>Ad:</b> ${d.fullname}</p>
+<p><b>Şikayət:</b> ${d.complaint}</p>
+<p><b>Prioritet:</b> ${d.priority}</p>
+<p><b>Tarix:</b> ${d.date}</p>
 </div>
-
-<div class="card">
-<h2>📊 Statistika</h2>
-
-<p id="totalCount">
-Ümumi müraciət: 0
-</p>
-
-<p id="highPriorityCount">
-Yüksək prioritet: 0
-</p>
-
-</div>
-
-<div class="card">
-
-<h2>Müraciətlər</h2>
-
-<div id="history"></div>
-
-</div>
-
-</div>
-
-<script>
-
-function generateID(){
-return "ES-" +
-Math.floor(
-100000 + Math.random()*900000
-);
-}
-
-function detectPriority(text){
-
-text=text.toLowerCase();
-
-if(
-text.includes("təcili") ||
-text.includes("təcili")
-){
-return "Yüksək";
-}
-
-return "Normal";
-}
-
-async function createComplaint(){
-
-const fullname =
-document.getElementById("fullname").value;
-
-const complaint =
-document.getElementById("complaint").value;
-
-if(!fullname || !complaint){
-alert("Bütün sahələri doldurun");
-return;
-}
-
-const id =
-generateID();
-
-const priority =
-detectPriority(complaint);
-
-const result =
-
-`Şikayət ID: ${id}
-
-Status: Qəbul edildi
-
-Ad Soyad:
-${fullname}
-
-Şikayət:
-
-${complaint}`;
-
-document.getElementById("result").innerText =
-result;
-
-await saveComplaintToFirebase({
-id,
-fullname,
-complaint,
-priority,
-date:new Date().toLocaleString()
-});
-
-loadHistory();
-updateStats();
-
-}
-function loadHistory(){
-
-const history =
-document.getElementById("history");
-
-history.innerHTML = "";
-
-const data =
-JSON.parse(
-localStorage.getItem("complaints")
-|| "[]"
-);
-
-data.forEach(item=>{
-
-history.innerHTML += `
-
-<div class="complaint-card">
-
-<b>${item.id}</b>
-
-<br>
-
-${item.fullname}
-
-<br>
-
-<span class="badge">
-${item.priority}
-</span>
-
-<br><br>
-
-${item.complaint}
-
-<br><br>
-
-<small>${item.date}</small>
-
-</div>
-
 `;
 
 });
 
-}
-
-function updateStats(){
-
-const data =
-JSON.parse(
-localStorage.getItem("complaints")
-|| "[]"
-);
-
-document.getElementById("totalCount").innerText =
-"Ümumi müraciət: " + data.length;
-
-const high =
-data.filter(
-x=>x.priority==="Yüksək"
-).length;
-
-document.getElementById("highPriorityCount").innerText =
-"Yüksək prioritet: " + high;
+document.getElementById("list").innerHTML = html;
 
 }
 
-loadHistory();
-updateStats();
-
-setTimeout(()=>{
-loadHistory();
-updateStats();
-},1000);
+window.onload = loadComplaints;
 
 </script>
 
-<script type="module">
+<style>
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-
-import {
-getFirestore,
-collection,
-addDoc
-}
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
-const firebaseConfig = {
-
-apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
-
-authDomain: "e-sikayet-ai.firebaseapp.com",
-
-projectId: "e-sikayet-ai",
-
-storageBucket: "e-sikayet-ai.firebasestorage.app",
-
-messagingSenderId: "499728034558",
-
-appId: "1:499728034558:web:6a0b0468489fadf67d13af"
-
-};
-
-const app =
-initializeApp(firebaseConfig);
-
-const db =
-getFirestore(app);
-
-window.saveComplaintToFirebase =
-async function(data){
-
-try{
-
-await addDoc(
-collection(db,"complaints"),
-data
-);
-
-let local =
-JSON.parse(
-localStorage.getItem("complaints")
-|| "[]"
-);
-loadHistory();
-
-local.unshift(data);
-if(window.saveComplaintToFirebase){
-    await window.saveComplaintToFirebase(data);
+body{
+background:#f4f6f9;
+font-family:Arial;
 }
 
-localStorage.setItem(
-"complaints",
-JSON.stringify(local)
-);
-
-}catch(error){
-
-console.error(error);
-
+h1{
+text-align:center;
 }
 
-}
+</style>
 
-</script>
+</head>
+
+<body>
+
+<h1>Admin Panel</h1>
+
+<div id="list"></div>
 
 </body>
 </html>
