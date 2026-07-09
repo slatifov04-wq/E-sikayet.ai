@@ -6,6 +6,13 @@
 <title>Admin Panel</title>
 
 <script type="module">
+const username = prompt("İstifadəçi adı:");
+const password = prompt("Şifrə:");
+
+if(username !== "admin" || password !== "123456"){
+    document.write("<h1 style='text-align:center;margin-top:100px;color:red'>Giriş qadağandır!</h1>");
+    throw new Error("Unauthorized");
+}
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
