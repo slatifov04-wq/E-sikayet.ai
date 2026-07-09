@@ -335,6 +335,7 @@ JSON.parse(
 localStorage.getItem("complaints")
 || "[]"
 );
+loadHistory();
 
 local.unshift(data);
 if(window.saveComplaintToFirebase){
