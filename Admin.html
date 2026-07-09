@@ -5,10 +5,82 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Panel</title>
 
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+getFirestore,
+collection,
+getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
+
+authDomain: "e-sikayet-ai.firebaseapp.com",
+
+projectId: "e-sikayet-ai",
+
+storageBucket: "e-sikayet-ai.firebasestorage.app",
+
+messagingSenderId: "499728034558",
+
+appId: "1:499728034558:web:6a0b0468489fadf67d13af"
+
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+async function loadComplaints() {
+
+const snap = await getDocs(
+collection(db,"complaints")
+);
+
+let html = "";
+
+snap.forEach(doc=>{
+
+const d = doc.data();
+
+html += `
+<div class="card">
+
+<h3>${d.id}</h3>
+
+<p><b>Ad:</b> ${d.fullname}</p>
+
+<p><b>Şikayət:</b> ${d.complaint}</p>
+
+<p><b>Prioritet:</b> ${d.priority}</p>
+
+<p><b>Tarix:</b> ${d.date}</p>
+
+<button onclick="alert('Şikayət həll edildi')">
+Həll edildi
+</button>
+
+</div>
+`;
+
+});
+
+document.getElementById("list").innerHTML = html;
+
+}
+
+loadComplaints();
+
+</script>
+
 <style>
+
 body{
 background:#f4f6f9;
-font-family:Arial,sans-serif;
+font-family:Arial;
+margin:0;
 padding:20px;
 }
 
@@ -19,169 +91,29 @@ text-align:center;
 .card{
 background:white;
 padding:15px;
-margin-bottom:15px;
+margin:15px 0;
 border-radius:10px;
 box-shadow:0 2px 5px rgba(0,0,0,.1);
 }
 
 button{
-padding:8px 12px;
-margin:5px;
+background:green;
+color:white;
 border:none;
+padding:10px 15px;
 border-radius:5px;
 cursor:pointer;
 }
 
-.pending{
-background:orange;
-color:white;
-}
-
-.done{
-background:green;
-color:white;
-}
-
-.delete{
-background:red;
-color:white;
-}
-
-.status{
-display:inline-block;
-padding:5px 10px;
-border-radius:20px;
-background:#2563eb;
-color:white;
-margin-top:5px;
-}
 </style>
 
 </head>
 
 <body>
 
-<h1>📋 Admin Panel</h1>
+<h1>Admin Panel</h1>
 
-<div id="list">Yüklənir...</div>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-
-import {
-getFirestore,
-collection,
-getDocs,
-updateDoc,
-deleteDoc,
-doc
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
-const firebaseConfig = {
-apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
-authDomain: "e-sikayet-ai.firebaseapp.com",
-projectId: "e-sikayet-ai",
-storageBucket: "e-sikayet-ai.firebasestorage.app",
-messagingSenderId: "499728034558",
-appId: "1:499728034558:web:6a0b0468489fadf67d13af"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-async function loadComplaints(){
-
-const snap = await getDocs(
-collection(db,"complaints")
-);
-
-let html="";
-
-snap.forEach(item=>{
-
-const d = item.data();
-const docId = item.id;
-
-html += `
-
-<div class="card">
-
-<h3>${d.id || "-"}</h3>
-
-<p><b>Ad:</b> ${d.fullname || "-"}</p>
-
-<p><b>Şikayət:</b><br>${d.complaint || "-"}</p>
-
-<p><b>Prioritet:</b> ${d.priority || "Normal"}</p>
-
-<p><b>Tarix:</b> ${d.date || "-"}</p>
-
-<p>
-<span class="status">
-${d.status || "Qəbul edildi"}
-</span>
-</p>
-
-<button
-class="pending"
-onclick="updateStatus('${docId}','Baxılır')">
-Baxılır
-</button>
-
-<button
-class="done"
-onclick="updateStatus('${docId}','Həll edildi')">
-Həll edildi
-</button>
-
-<button
-class="delete"
-onclick="deleteComplaint('${docId}')">
-Sil
-</button>
-
-</div>
-
-`;
-
-});
-
-document.getElementById("list").innerHTML =
-html;
-
-}
-
-window.updateStatus = async function(id,status){
-
-await updateDoc(
-doc(db,"complaints",id),
-{
-status:status
-}
-);
-
-loadComplaints();
-
-}
-
-window.deleteComplaint = async function(id){
-
-if(!confirm("Silmək istəyirsən?")){
-return;
-}
-
-await deleteDoc(
-doc(db,"complaints",id)
-);
-
-loadComplaints();
-
-}
-
-loadComplaints();
-
-</script>
+<div id="list"></div>
 
 </body>
 </html>
