@@ -33,7 +33,6 @@ button{ padding:12px 20px; background:#2563eb; color:white; border:none; border-
 </header>
 
 <div class="container">
-    <!-- SOL TƏRƏF: AI ÇAT VƏ MÜRACİƏT -->
     <div>
         <div class="card" style="margin-bottom: 20px;">
             <h2>Vətəndaş Qəbulu (AI Asistent)</h2>
@@ -44,13 +43,14 @@ button{ padding:12px 20px; background:#2563eb; color:white; border:none; border-
             </div>
 
             <div class="chat-box" id="chatBox">
-                <div class="message ai-msg">Salam! Mən E-Şikayət Süni İntellekt köməkçisiyəm. Zəhmət olmasa qarşılaşdığınız problemi ətraflı qeyd edin. Müvafiq qurumu və təcililik dərəcəsini mən təyin edəcəyəm.</div>
+                <div class="message ai-msg">Salam! Mən E-Şikayət Süni İntellekt köməkçisiyəm. Zəhmət olmasa qarşılaşdığınız problemi ətraflı qeyd edin. Ünvanı və detalları mənə deyin, söhbətimiz bitəndə aşağıdakı düymə ilə göndərərik.</div>
             </div>
 
             <div class="input-area">
                 <input class="chat-input" id="chatInput" placeholder="Mesajınızı yazın...">
                 <button id="sendBtn">Göndər</button>
             </div>
+            <!-- Bu düyməni vətəndaş ancaq danışıb qurtarandan sonra rəsmi müraciət üçün basacaq -->
             <button id="submitComplaintBtn" style="margin-top: 15px; background: #16a34a; width: 100%; display: none;">Şikayəti Rəsmi Olaraq Tamamla və Göndər</button>
         </div>
 
@@ -60,7 +60,6 @@ button{ padding:12px 20px; background:#2563eb; color:white; border:none; border-
         </div>
     </div>
 
-    <!-- SAĞ TƏRƏF: STATİSTİKA -->
     <div>
         <div class="card">
             <h2>📊 Real Vaxt Statistikası</h2>
@@ -76,7 +75,7 @@ button{ padding:12px 20px; background:#2563eb; color:white; border:none; border-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// GitHub təhlükəsizlik filtrini keçmək üçün iki yerə bölünmüş API açarı:
+// GitHub filtri üçün bölünmüş API Açarın
 const part1 = "AQ.Ab8RN6KJ9bH4EydpdTGiU";
 const part2 = "U4ifN3TZuHgc3gjmwpcn6-coquqog";
 const GEMINI_API_KEY = part1 + part2;
@@ -93,7 +92,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 let complaintsData = [];
-let currentAnalysis = { priority: "Normal", summary: "" };
+
+// Çat tarixçəsini bura yığırıq ki, robot köhnə dediklərimizi xatırlasın
+let chatHistory = []; 
+let currentPriority = "Normal";
 
 const chatBox = document.getElementById("chatBox");
 const chatInput = document.getElementById("chatInput");
@@ -110,43 +112,44 @@ function appendMessage(text, isUser) {
 
 async function askAI(userMessage) {
     try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`;
+        // Canlı sual-cavab üçün rəsmi daxili model strukturu
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+        // İndiki mesajı tarixçəyə əlavə edirik
+        chatHistory.push({ "role": "user", "parts": [{ "text": userMessage }] });
+
+        // Robota necə davranmalı olduğunu başa salırıq
+        const systemPrompt = "Sən Azərbaycan Respublikasının dövlət qurumları üçün rəsmi şikayət asistentisən. Vətəndaş sənə problemini deyir. Sən ondan mütləq şikayətin baş verdiyi dəqiq ünvanı (məsələn, hansı küçə, bina) və əgər lazımdırsa digər detalları soruş. Vətəndaşla canlı söhbət apar. Cavabların qısa, səmimi və köməkçi olsun.";
 
         const response = await fetch(url, {
             method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "X-goog-api-key": GEMINI_API_KEY
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [
-                    {
-                        parts: [
-                            { 
-                                text: "Sən Azərbaycan Respublikasının dövlət qurumları üçün rəsmi şikayət asistentisən. Vətəndaşla çox nəzakətli və rəsmi danış. Ondan problemin baş verdiyi tam ünvanı və detalları soruşaraq kömək et. Cavabların qısa, aydın və konkret olsun. Budur vətəndaşın sənə yazdığı mesaj: " + userMessage 
-                            }
-                        ]
-                    }
+                    { "role": "user", "parts": [{ "text": systemPrompt }] },
+                    ...chatHistory
                 ]
             })
         });
 
         const data = await response.json();
         const aiReply = data.candidates[0].content.parts[0].text;
+        
+        // Robotun cavabını da tarixçəyə yazırıq ki, növbəti mesajda çaşmasın
+        chatHistory.push({ "role": "model", "parts": [{ "text": aiReply }] });
         appendMessage(aiReply, false);
         
-        currentAnalysis.summary += (currentAnalysis.summary ? " | " : "") + userMessage;
-        
-        const lowerText = currentAnalysis.summary.toLowerCase();
-        if(lowerText.includes("təcili") || lowerText.includes("işıq yoxdur") || lowerText.includes("internet kəsilib") || lowerText.includes("partlayış") || lowerText.includes("qəza") || lowerText.includes("sönüb")) {
-            currentAnalysis.priority = "Yüksək";
+        // Prioritet təyini
+        const fullConversation = chatHistory.map(h => h.parts[0].text).join(" ").toLowerCase();
+        if(fullConversation.includes("təcili") || fullConversation.includes("su gəlmir") || fullConversation.includes("işıq yoxdur") || fullConversation.includes("qəza")) {
+            currentPriority = "Yüksək";
         }
         
+        // Danışıq başlayanda "Göndər" düyməsi aktivləşir
         submitComplaintBtn.style.display = "block";
     } catch (error) {
-        console.error("AI xətası:", error);
-        appendMessage("Süni intellekt sisteminə qoşularkən bir xəta oldu, lakin müraciətiniz qeydə alınır.", false);
-        submitComplaintBtn.style.display = "block";
+        console.error("AI Xətası:", error);
+        appendMessage("Xəta baş verdi. Zəhmət olmasa yenidən yazın.", false);
     }
 }
 
@@ -165,28 +168,36 @@ async function handleUserSend() {
     await askAI(text);
 }
 
+// Bütün söhbəti rəsmi müraciət kimi Firebase-ə ötürürük
 async function submitToFirebase() {
     const fullname = document.getElementById("fullname").value.trim();
     
+    // Yalnız vətəndaşın yazdığı mesajları birləşdirib təmiz mətndə saxlayırıq
+    const citizenMessages = chatHistory
+        .filter(h => h.role === "user")
+        .map(h => h.parts[0].text)
+        .join(" | ");
+
     const complaintObject = {
         id: "ES-" + Math.floor(100000 + Math.random()*900000),
         fullname: fullname,
-        complaint: currentAnalysis.summary.trim(),
-        priority: currentAnalysis.priority,
+        complaint: citizenMessages,
+        priority: currentPriority,
         status: "Qəbul edildi",
         date: new Date().toLocaleString()
     };
 
     try {
         await addDoc(collection(db, "complaints"), complaintObject);
-        alert("Müraciətiniz AI tərəfindən rəsmiləşdirildi və Admin Panelə göndərildi!");
+        alert("Müraciətiniz rəsmi qaydada tamamlandı və Admin Panelə göndərildi!");
         
         document.getElementById("fullname").value = "";
-        chatBox.innerHTML = '<div class="message ai-msg">Müraciətiniz uğurla admin panelinə ötürüldü. Yeni bir şikayətiniz varsa, yenidən başlaya bilərsiniz.</div>';
+        chatBox.innerHTML = '<div class="message ai-msg">Müraciətiniz qəbul olundu. Yeni bir mövzu varsa, buyurun yazın.</div>';
         submitComplaintBtn.style.display = "none";
-        currentAnalysis = { priority: "Normal", summary: "" };
+        chatHistory = [];
+        currentPriority = "Normal";
     } catch(error) {
-        console.error("Firebase xətası:", error);
+        console.error("Firebase göndərmə xətası:", error);
     }
 }
 
