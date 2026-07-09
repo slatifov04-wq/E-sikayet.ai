@@ -66,13 +66,22 @@ async function loadComplaints(){
     try {
         const snap = await getDocs(collection(db, "complaints"));
         complaints = [];
+        
         snap.forEach(docSnap => {
             complaints.push({ dbId: docSnap.id, ...docSnap.data() });
         });
+
+        // Burada tarixləri müqayisə edib ən yeniləri ən üstə çıxarırıq
+        complaints.sort((a, b) => {
+            const dateA = a.date ? new Date(a.date.replace(/\./g, '/')) : 0;
+            const dateB = b.date ? new Date(b.date.replace(/\./g, '/')) : 0;
+            return dateB - dateA;
+        });
+
         renderComplaints();
         updateStats();
     } catch(err) {
-        console.error(err);
+        console.error("Məlumat yüklənərkən xəta baş verdi:", err);
     }
 }
 
@@ -109,14 +118,22 @@ function updateStats(){
 }
 
 window.changeStatus = async function(dbId, newStatus) {
-    await updateDoc(doc(db, "complaints", dbId), { status: newStatus });
-    loadComplaints();
+    try {
+        await updateDoc(doc(db, "complaints", dbId), { status: newStatus });
+        await loadComplaints();
+    } catch (err) {
+        console.error("Status yenilənərkən xəta:", err);
+    }
 }
 
 window.removeComplaint = async function(dbId) {
-    if(confirm("Silmək istəyirsiniz?")) {
-        await deleteDoc(doc(db, "complaints", dbId));
-        loadComplaints();
+    if(confirm("Bu müraciəti silmək istəyirsiniz?")) {
+        try {
+            await deleteDoc(doc(db, "complaints", dbId));
+            await loadComplaints();
+        } catch (err) {
+            console.error("Silinərkən xəta:", err);
+        }
     }
 }
 
