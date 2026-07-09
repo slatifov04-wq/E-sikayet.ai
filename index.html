@@ -72,10 +72,8 @@ button{ padding:12px 20px; background:#2563eb; color:white; border:none; border-
 <script type="module">  
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";  
 import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";  
-// Rəsmi Google AI SDK kitabxanasını bura əlavə etdik (Yeni açarlarla işləmək üçün mütləqdir)
-import { GoogleGenAI } from "https://esm.run/@google/genai";
-
-// Son şəkildə aldığınız yeni nəsil API açarı
+  
+// Sizin sahib olduğunuz aktiv AQ formatlı API açarı
 const GEMINI_API_KEY = "AQ.Ab8RN6JYoKaEQ0a5ZdBGKA6T6un9cQD_6gY7wBwT89e_1K0oXvY";  
   
 const firebaseConfig = {  
@@ -97,9 +95,6 @@ const chatBox = document.getElementById("chatBox");
 const chatInput = document.getElementById("chatInput");  
 const sendBtn = document.getElementById("sendBtn");  
 const submitComplaintBtn = document.getElementById("submitComplaintBtn");  
-
-// Google AI SDK-nı işə salırıq
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
   
 function appendMessage(text, isUser, isError = false) {  
     const msg = document.createElement("div");  
@@ -115,19 +110,32 @@ function appendMessage(text, isUser, isError = false) {
   
 async function askAI(userMessage) {  
     try {  
-        // Tariçəni düzgün formata gətiririk
+        // Brauzer bloklamasını aşmaq üçün sorğunu Cors Proxy (AllOrigins) üzərindən dolandırırıq
+        const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;  
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+
         chatHistory.push({ "role": "user", "parts": [{ "text": userMessage }] });  
   
-        // Rəsmi SDK metodu ilə sorğu göndəririk
-        const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+        const requestBody = {
             contents: chatHistory,
-            config: {
-                systemInstruction: "Sən Azərbaycan Respublikasının dövlət qurumları üçün rəsmi şikayət asistentisən. Vətəndaş sənə problemini deyir. Sən ondan mütləq şikayətin baş verdiyi dəqiq ünvanı və əgər lazımdırsa digər detalları soruş. Vətəndaşla canlı söhbət apar. Cavabların qısa, səmimi və köməkçi olsun."
+            systemInstruction: {
+                parts: [{ text: "Sən Azərbaycan Respublikasının dövlət qurumları üçün rəsmi şikayət asistentisən. Vətəndaş sənə problemini deyir. Sən ondan mütləq şikayətin baş verdiyi dəqiq ünvanı və əgər lazımdırsa digər detalları soruş. Vətəndaşla canlı söhbət apar. Cavabların qısa, səmimi və köməkçi olsun." }]
             }
-        });
+        };
   
-        const aiReply = response.text;  
+        const response = await fetch(proxyUrl, {  
+            method: "POST",  
+            headers: { "Content-Type": "application/json" },  
+            body: JSON.stringify(requestBody)  
+        });  
+  
+        const data = await response.json();
+        
+        if(data.error) {
+            throw new Error(data.error.message);
+        }
+  
+        const aiReply = data.candidates[0].content.parts[0].text;  
           
         chatHistory.push({ "role": "model", "parts": [{ "text": aiReply }] });  
         appendMessage(aiReply, false);  
@@ -140,7 +148,7 @@ async function askAI(userMessage) {
         submitComplaintBtn.style.display = "block";  
     } catch (error) {  
         console.error("AI Xətası:", error);  
-        appendMessage(`Sistem bağlantı xətası: ${error.message}`, false, true);  
+        appendMessage(`Bağlantı xətası: ${error.message}`, false, true);  
     }  
 }  
   
