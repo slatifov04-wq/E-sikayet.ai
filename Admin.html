@@ -1,270 +1,145 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel V2</title>
-
-<style>
-
-body{
-background:#f4f6f9;
-font-family:Arial;
-margin:0;
-padding:20px;
-}
-
-h1{
-text-align:center;
-}
-
-.stats{
-display:flex;
-gap:10px;
-margin-bottom:20px;
-flex-wrap:wrap;
-}
-
-.stat{
-background:white;
-padding:15px;
-border-radius:10px;
-flex:1;
-min-width:150px;
-text-align:center;
-box-shadow:0 2px 5px rgba(0,0,0,.1);
-}
-
-input,select{
-width:100%;
-padding:10px;
-margin-bottom:15px;
-border-radius:8px;
-border:1px solid #ddd;
-}
-
-.card{
-background:white;
-padding:15px;
-margin:15px 0;
-border-radius:10px;
-box-shadow:0 2px 5px rgba(0,0,0,.1);
-}
-
-.btn{
-padding:8px 12px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-margin-right:5px;
-margin-top:5px;
-color:white;
-}
-
-.green{
-background:green;
-}
-
-.orange{
-background:orange;
-}
-
-.red{
-background:red;
-}
-
-.status{
-display:inline-block;
-padding:5px 10px;
-border-radius:20px;
-background:#2563eb;
-color:white;
-margin-top:10px;
-}
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel V2</title>
+    <style>
+        body { background:#f4f6f9; font-family:Arial; margin:0; padding:20px; }
+        h1 { text-align:center; }
+        .stats { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+        .stat { background:white; padding:15px; border-radius:10px; flex:1; min-width:150px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,.1); }
+        input, select { width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; box-sizing: border-box; }
+        .card { background:white; padding:15px; margin:15px 0; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,.1); }
+        .btn { padding:8px 12px; border:none; border-radius:6px; cursor:pointer; margin-right:5px; margin-top:5px; color:white; }
+        .green { background:green; }
+        .orange { background:orange; }
+        .red { background:red; }
+        .status { display:inline-block; padding:5px 10px; border-radius:20px; background:#2563eb; color:white; margin-top:10px; }
+    </style>
 </head>
-
 <body>
 
 <h1>📋 Admin Panel</h1>
 
 <div class="stats">
-<div class="stat">
-<h2 id="totalCount">0</h2>
-<p>Ümumi</p>
+    <div class="stat">
+        <h2 id="totalCount">0</h2>
+        <p>Ümumi</p>
+    </div>
+    <div class="stat">
+        <h2 id="highCount">0</h2>
+        <p>Yüksək Prioritet</p>
+    </div>
 </div>
 
-<div class="stat">
-<h2 id="highCount">0</h2>
-<p>Yüksək Prioritet</p>
-</div>
-</div>
-
-<input
-type="text"
-id="searchInput"
-placeholder="Axtar..."
->
+<input type="text" id="searchInput" placeholder="Axtar...">
 
 <select id="filterStatus">
-<option value="all">Hamısı</option>
-<option value="Qəbul edildi">Qəbul edildi</option>
-<option value="Baxılır">Baxılır</option>
-<option value="Həll edildi">Həll edildi</option>
+    <option value="all">Hamısı</option>
+    <option value="Qəbul edildi">Qəbul edildi</option>
+    <option value="Baxılır">Baxılır</option>
+    <option value="Həll edildi">Həll edildi</option>
 </select>
 
 <div id="list"></div>
 
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    // Sadə təhlükəsizlik yoxlanışı
+    const username = prompt("İstifadəçi adı:");
+    const password = prompt("Şifrə:");
+    if(username !== "admin" || password !== "123456"){
+        document.body.innerHTML = "<h1 style='text-align:center;margin-top:100px;color:red'>Giriş qadağandır!</h1>";
+        throw new Error("Unauthorized");
+    }
 
-import {
-getFirestore,
-collection,
-getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    const firebaseConfig = {
+        apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
+        authDomain: "e-sikayet-ai.firebaseapp.com",
+        projectId: "e-sikayet-ai",
+        storageBucket: "e-sikayet-ai.firebasestorage.app",
+        messagingSenderId: "499728034558",
+        appId: "1:499728034558:web:6a0b0468489fadf67d13af"
+    };
 
-const username = prompt("İstifadəçi adı:");
-const password = prompt("Şifrə:");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    let complaints = [];
 
-if(username !== "admin" || password !== "123456"){
-document.body.innerHTML =
-"<h1 style='text-align:center;margin-top:100px;color:red'>Giriş qadağandır!</h1>";
-throw new Error("Unauthorized");
-}
+    async function loadComplaints(){
+        const snap = await getDocs(collection(db, "complaints"));
+        complaints = [];
+        snap.forEach(documentSnapshot => {
+            // Firebase sənədinin ID-sini də saxlayırıq ki, sonra silə və ya yeniləyə bilək
+            complaints.push({ dbId: documentSnapshot.id, ...documentSnapshot.data() });
+        });
+        renderComplaints();
+        updateStats();
+    }
 
-const firebaseConfig = {
+    function renderComplaints(){
+        const search = document.getElementById("searchInput").value.toLowerCase();
+        const filter = document.getElementById("filterStatus").value;
+        let html = "";
 
-apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
-authDomain: "e-sikayet-ai.firebaseapp.com",
-projectId: "e-sikayet-ai",
-storageBucket: "e-sikayet-ai.firebasestorage.app",
-messagingSenderId: "499728034558",
-appId: "1:499728034558:web:6a0b0468489fadf67d13af"
+        complaints.forEach(d => {
+            const status = d.status || "Qəbul edildi";
 
-};
+            if(search && !(
+                (d.fullname || "").toLowerCase().includes(search) ||
+                (d.complaint || "").toLowerCase().includes(search) ||
+                (d.id || "").toLowerCase().includes(search)
+            )) { return; }
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+            if(filter !== "all" && status !== filter){ return; }
 
-let complaints = [];
+            html += `
+            <div class="card">
+                <h3>${d.id || "-"}</h3>
+                <p><b>Ad:</b> ${d.fullname || "-"}</p>
+                <p><b>Şikayət:</b> ${d.complaint || "-"}</p>
+                <p><b>Prioritet:</b> ${d.priority || "-"}</p>
+                <p><b>Tarix:</b> ${d.date || "-"}</p>
+                <div class="status">${status}</div>
+                <br><br>
+                <button class="btn orange" onclick="window.updateStatus('${d.dbId}', 'Baxılır')">Baxılır</button>
+                <button class="btn green" onclick="window.updateStatus('${d.dbId}', 'Həll edildi')">Həll edildi</button>
+                <button class="btn red" onclick="window.deleteComplaint('${d.dbId}')">Sil</button>
+            </div>`;
+        });
 
-async function loadComplaints(){
+        document.getElementById("list").innerHTML = html;
+    }
 
-const snap = await getDocs(
-collection(db,"complaints")
-);
+    function updateStats(){
+        document.getElementById("totalCount").innerText = complaints.length;
+        document.getElementById("highCount").innerText = complaints.filter(x => x.priority === "Yüksək").length;
+    }
 
-complaints = [];
+    // Firebase funksiyalarını qlobal edirik ki, HTML düymələri onları çağıra bilsin
+    window.updateStatus = async function(dbId, newStatus) {
+        const docRef = doc(db, "complaints", dbId);
+        await updateDoc(docRef, { status: newStatus });
+        alert("Status yeniləndi: " + newStatus);
+        loadComplaints(); // Siyahını yenidən yüklə
+    }
 
-snap.forEach(doc=>{
-complaints.push(doc.data());
-});
+    window.deleteComplaint = async function(dbId) {
+        if(confirm("Bu müraciəti silmək istədiyinizdən əminsiniz?")) {
+            const docRef = doc(db, "complaints", dbId);
+            await deleteDoc(docRef);
+            alert("Müraciət silindi.");
+            loadComplaints();
+        }
+    }
 
-renderComplaints();
-updateStats();
-}
+    window.addEventListener("input", renderComplaints);
+    window.addEventListener("change", renderComplaints);
 
-function renderComplaints(){
-
-const search =
-document.getElementById("searchInput").value.toLowerCase();
-
-const filter =
-document.getElementById("filterStatus").value;
-
-let html = "";
-
-complaints.forEach(d=>{
-
-const status =
-d.status || "Qəbul edildi";
-
-if(
-search &&
-!(
-(d.fullname || "").toLowerCase().includes(search) ||
-(d.complaint || "").toLowerCase().includes(search) ||
-(d.id || "").toLowerCase().includes(search)
-)
-){
-return;
-}
-
-if(
-filter !== "all" &&
-status !== filter
-){
-return;
-}
-
-html += `
-<div class="card">
-
-<h3>${d.id || "-"}</h3>
-
-<p><b>Ad:</b> ${d.fullname || "-"}</p>
-
-<p><b>Şikayət:</b> ${d.complaint || "-"}</p>
-
-<p><b>Prioritet:</b> ${d.priority || "-"}</p>
-
-<p><b>Tarix:</b> ${d.date || "-"}</p>
-
-<div class="status">
-${status}
-</div>
-
-<br><br>
-
-<button
-class="btn orange"
-onclick="alert('Status: Baxılır')">
-Baxılır
-</button>
-
-<button
-class="btn green"
-onclick="alert('Status: Həll edildi')">
-Həll edildi
-</button>
-
-<button
-class="btn red"
-onclick="this.parentElement.remove()">
-Sil
-</button>
-
-</div>
-`;
-
-});
-
-document.getElementById("list").innerHTML =
-html;
-
-}
-
-function updateStats(){
-
-document.getElementById("totalCount").innerText =
-complaints.length;
-
-document.getElementById("highCount").innerText =
-complaints.filter(
-x=>x.priority==="Yüksək"
-).length;
-
-}
-
-window.addEventListener("input",renderComplaints);
-window.addEventListener("change",renderComplaints);
-
-loadComplaints();
-
+    loadComplaints();
 </script>
-
 </body>
 </html>
