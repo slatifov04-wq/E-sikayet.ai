@@ -1,1 +1,104 @@
-E-sikayet.ai
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-Şikayət AI</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f5f5f5;
+margin:0;
+padding:0;
+}
+
+header{
+background:#6c3df4;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+max-width:500px;
+margin:30px auto;
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+input,textarea,button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border-radius:10px;
+border:1px solid #ccc;
+box-sizing:border-box;
+}
+
+button{
+background:#6c3df4;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+button:hover{
+opacity:0.9;
+}
+
+.result{
+margin-top:20px;
+padding:15px;
+background:#f0f0f0;
+border-radius:10px;
+white-space:pre-wrap;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>E-Şikayət AI</h1>
+<p>Şikayətinizi AI ilə hazırlayın</p>
+</header>
+
+<div class="container">
+
+<input id="name" placeholder="Ad Soyad">
+
+<textarea id="complaint" rows="6" placeholder="Şikayətinizi yazın"></textarea>
+
+<button onclick="generateComplaint()">Şikayət Hazırla</button>
+
+<div class="result" id="result"></div>
+
+</div>
+
+<script>
+function generateComplaint(){
+
+const name=document.getElementById("name").value;
+const complaint=document.getElementById("complaint").value;
+
+const text=
+`Hörmətli qurum,
+
+Mən ${name} aşağıdakı məsələ ilə bağlı müraciət edirəm:
+
+${complaint}
+
+Xahiş edirəm məsələ araşdırılsın və qanunvericiliyə uyğun tədbir görülsün.
+
+Hörmətlə,
+${name}`;
+
+document.getElementById("result").innerText=text;
+}
+</script>
+
+</body>
+</html>
