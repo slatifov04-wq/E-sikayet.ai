@@ -4,69 +4,154 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-Şikayət AI V4</title>
 
-<title>E-Şikayət AI</title>
+<style>
 
-<link rel="stylesheet" href="style.css">
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
 
+body{
+background:#f4f6f9;
+}
+
+header{
+background:#2563eb;
+color:white;
+padding:25px;
+text-align:center;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
+margin-bottom:20px;
+}
+
+h1,h2{
+margin-bottom:10px;
+}
+
+input,textarea,select{
+width:100%;
+padding:12px;
+margin-top:10px;
+margin-bottom:10px;
+border:1px solid #ddd;
+border-radius:10px;
+}
+
+button{
+width:100%;
+padding:14px;
+background:#2563eb;
+color:white;
+border:none;
+border-radius:10px;
+cursor:pointer;
+margin-top:10px;
+}
+
+button:hover{
+opacity:.9;
+}
+
+.result{
+background:#eef4ff;
+padding:15px;
+border-radius:10px;
+margin-top:15px;
+white-space:pre-wrap;
+}
+
+.stat-box{
+background:#fafafa;
+padding:15px;
+border-radius:10px;
+margin-top:10px;
+}
+
+.complaint-card{
+background:#fafafa;
+padding:15px;
+border-left:5px solid #2563eb;
+border-radius:10px;
+margin-top:10px;
+}
+
+.badge{
+display:inline-block;
+padding:4px 10px;
+border-radius:20px;
+background:#2563eb;
+color:white;
+font-size:12px;
+margin-top:5px;
+}
+
+</style>
 </head>
+
 <body>
 
 <header>
+
 <h1>🤖 E-Şikayət AI</h1>
-<p>Azərbaycan üçün AI əsaslı müraciət platforması</p>
+
+<p>
+AI əsaslı şikayət və müraciət platforması
+</p>
+
 </header>
 
 <div class="container">
 
 <div class="card">
 
-<h2>Yeni Müraciət</h2>
+<h2>Yeni Şikayət</h2>
 
 <input
 id="fullname"
-type="text"
 placeholder="Ad Soyad">
-
-<select id="institution">
-
-<option value="">Qurum seçin</option>
-
-<option>Azərsu</option>
-<option>Azərişıq</option>
-<option>Azəriqaz</option>
-<option>DİN</option>
-<option>Təhsil Nazirliyi</option>
-<option>Səhiyyə Nazirliyi</option>
-<option>ƏƏSMN</option>
-<option>Kapital Bank</option>
-<option>ABB</option>
-<option>Unibank</option>
-<option>AccessBank</option>
-<option>Pasha Bank</option>
-<option>BakıBus</option>
-<option>Bakı Metropoliteni</option>
-<option>İnternet Provayderi</option>
-<option>Dövlət Vergi Xidməti</option>
-<option>ASAN Xidmət</option>
-<option>İcbari Tibbi Sığorta</option>
-<option>Aztelekom</option>
-<option>Bakcell</option>
-<option>Azercell</option>
-<option>Nar</option>
-
-</select>
 
 <textarea
 id="complaint"
 rows="6"
-placeholder="Probleminizi yazın..."></textarea>
+placeholder="Probleminizi ətraflı yazın">
+</textarea>
+
+<select id="urgency">
+
+<option>Normal</option>
+<option>Təcili</option>
+
+</select>
 
 <button onclick="createComplaint()">
 Şikayət Hazırla
 </button>
 
-<div id="result"></div>
+<div id="result" class="result"></div>
+
+<button onclick="copyComplaint()">
+📋 Şikayəti Kopyala
+</button>
+
+<button onclick="downloadComplaint()">
+📄 Fayl Kimi Yüklə
+</button>
 
 </div>
 
@@ -74,17 +159,19 @@ placeholder="Probleminizi yazın..."></textarea>
 
 <h2>📊 Statistika</h2>
 
-<div class="stats">
-
 <div class="stat-box">
-<span id="totalCount">0</span>
-<p>Müraciət</p>
-</div>
 
-<div class="stat-box">
-<span id="acceptedCount">0</span>
-<p>Qəbul</p>
-</div>
+<p id="totalCount">
+Ümumi müraciət: 0
+</p>
+
+<p id="todayCount">
+Bugünkü müraciət: 0
+</p>
+
+<p id="highPriorityCount">
+Yüksək prioritet: 0
+</p>
 
 </div>
 
@@ -92,7 +179,7 @@ placeholder="Probleminizi yazın..."></textarea>
 
 <div class="card">
 
-<h2>🔍 Axtarış</h2>
+<h2>🔎 Axtarış</h2>
 
 <input
 id="searchInput"
@@ -103,7 +190,7 @@ onkeyup="searchComplaints()">
 
 <div class="card">
 
-<h2>📂 Müraciətlərim</h2>
+<h2>Müraciətlərim</h2>
 
 <div id="history"></div>
 
@@ -111,7 +198,336 @@ onkeyup="searchComplaints()">
 
 </div>
 
-<script src="app.js"></script>
+<script>
+
+function detectInstitution(text){
+
+text=text.toLowerCase();
+
+const institutions=[
+
+{keywords:["su","kanalizasiya"],name:"Azərsu"},
+{keywords:["qaz"],name:"Azəriqaz"},
+{keywords:["işıq","elektrik"],name:"Azərişıq"},
+
+{keywords:["azercell"],name:"Azercell"},
+{keywords:["bakcell"],name:"Bakcell"},
+{keywords:["nar"],name:"Nar Mobile"},
+
+{keywords:["internet","wifi"],name:"İnternet Provayderi"},
+
+{keywords:["kapital bank"],name:"Kapital Bank"},
+{keywords:["abb"],name:"ABB"},
+{keywords:["unibank"],name:"Unibank"},
+{keywords:["paşa bank"],name:"Paşa Bank"},
+{keywords:["yelo"],name:"Yelo Bank"},
+
+{keywords:["polis"],name:"DİN"},
+{keywords:["pasport"],name:"DİN"},
+{keywords:["miqrasiya"],name:"Dövlət Miqrasiya Xidməti"},
+
+{keywords:["məktəb"],name:"Elm və Təhsil Nazirliyi"},
+{keywords:["universitet"],name:"Elm və Təhsil Nazirliyi"},
+{keywords:["müəllim"],name:"Elm və Təhsil Nazirliyi"},
+
+{keywords:["xəstəxana"],name:"Səhiyyə Nazirliyi"},
+{keywords:["həkim"],name:"Səhiyyə Nazirliyi"},
+{keywords:["dərman"],name:"Səhiyyə Nazirliyi"},
+
+{keywords:["vergi"],name:"İqtisadiyyat Nazirliyi"},
+{keywords:["gömrük"],name:"Dövlət Gömrük Komitəsi"},
+
+{keywords:["məhkəmə"],name:"Ədliyyə Nazirliyi"},
+{keywords:["prokurorluq"],name:"Baş Prokurorluq"},
+
+{keywords:["avtobus"],name:"AYNA"},
+{keywords:["metro"],name:"Bakı Metropoliteni"},
+{keywords:["yol"],name:"AYNA"},
+
+{keywords:["pensiya"],name:"DSMF"},
+{keywords:["işsizlik"],name:"ƏƏSMN"},
+
+{keywords:["ekologiya"],name:"Ekologiya Nazirliyi"},
+{keywords:["bələdiyyə"],name:"Bələdiyyə"}
+
+];
+
+for(let item of institutions){
+
+for(let keyword of item.keywords){
+
+if(text.includes(keyword)){
+return item.name;
+}
+
+}
+
+}
+
+return "Aidiyyəti Dövlət Qurumu";
+}
+
+function detectCategory(inst){
+
+if(
+inst==="Azərsu" ||
+inst==="Azəriqaz" ||
+inst==="Azərişıq"
+){
+return "Kommunal";
+}
+
+if(inst.includes("Bank")){
+return "Bank";
+}
+
+if(inst==="DİN"){
+return "Təhlükəsizlik";
+}
+
+if(inst==="Səhiyyə Nazirliyi"){
+return "Səhiyyə";
+}
+
+return "Ümumi";
+}
+function detectPriority(text){
+
+text=text.toLowerCase();
+
+if(
+text.includes("təcili") ||
+text.includes("3 gün") ||
+text.includes("1 həftə")
+){
+return "Yüksək";
+}
+
+return "Normal";
+}
+
+function generateID(){
+
+return "ES-" +
+Math.floor(
+100000 + Math.random()*900000
+);
+
+}
+
+function createComplaint(){
+
+const name =
+document.getElementById("fullname").value;
+
+const complaint =
+document.getElementById("complaint").value;
+
+if(!name || !complaint){
+
+alert("Bütün sahələri doldurun");
+
+return;
+}
+
+const institution =
+detectInstitution(complaint);
+
+const category =
+detectCategory(institution);
+
+const priority =
+detectPriority(complaint);
+
+const id =
+generateID();
+
+const result =
+
+`Şikayət ID: ${id}
+
+Qurum: ${institution}
+
+Kateqoriya: ${category}
+
+Prioritet: ${priority}
+
+Status: Qəbul edildi
+
+Hörmətli ${institution} rəhbərliyi.
+
+Mən ${name} aşağıdakı məsələ ilə bağlı müraciət edirəm:
+
+${complaint}
+
+Xahiş edirəm problemin araşdırılması və həll olunması üçün tədbir görülsün.
+
+Hörmətlə,
+${name}`;
+
+document.getElementById("result").innerText =
+result;
+
+let data =
+JSON.parse(
+localStorage.getItem("complaints")
+|| "[]"
+);
+
+data.unshift({
+
+id:id,
+institution:institution,
+category:category,
+priority:priority,
+complaint:complaint,
+date:new Date().toLocaleString()
+
+});
+
+localStorage.setItem(
+"complaints",
+JSON.stringify(data)
+);
+
+loadHistory();
+updateStats();
+
+}
+
+function copyComplaint(){
+
+const text =
+document.getElementById("result").innerText;
+
+navigator.clipboard.writeText(text);
+
+alert("Kopyalandı");
+
+}
+
+function downloadComplaint(){
+
+const text =
+document.getElementById("result").innerText;
+
+const blob =
+new Blob([text],{type:"text/plain"});
+
+const a =
+document.createElement("a");
+
+a.href =
+URL.createObjectURL(blob);
+
+a.download =
+"sikayet.txt";
+
+a.click();
+
+}
+
+function loadHistory(){
+
+let data =
+JSON.parse(
+localStorage.getItem("complaints")
+|| "[]"
+);
+
+let html="";
+
+data.forEach(item=>{
+
+html += `
+
+<div class="complaint-card">
+
+<b>${item.id}</b><br>
+
+${item.institution}<br>
+
+<span class="badge">
+${item.category}
+</span>
+
+<span class="badge">
+${item.priority}
+</span>
+
+<br><br>
+
+${item.complaint}
+
+<br><br>
+
+<small>${item.date}</small>
+
+</div>
+
+`;
+
+});
+
+document.getElementById("history").innerHTML =
+html;
+
+}
+
+function updateStats(){
+
+let data =
+JSON.parse(
+localStorage.getItem("complaints")
+|| "[]"
+);
+
+document.getElementById("totalCount").innerText =
+"Ümumi müraciət: " + data.length;
+
+document.getElementById("todayCount").innerText =
+"Bugünkü müraciət: " + data.length;
+
+let high =
+data.filter(
+x=>x.priority==="Yüksək"
+).length;
+
+document.getElementById("highPriorityCount").innerText =
+"Yüksək prioritet: " + high;
+
+}
+
+function searchComplaints(){
+
+let query =
+document.getElementById("searchInput")
+.value
+.toLowerCase();
+
+let cards =
+document.querySelectorAll(".complaint-card");
+
+cards.forEach(card=>{
+
+if(
+card.innerText
+.toLowerCase()
+.includes(query)
+){
+card.style.display="block";
+}else{
+card.style.display="none";
+}
+
+});
+
+}
+
+loadHistory();
+updateStats();
+
+</script>
 
 </body>
 </html>
