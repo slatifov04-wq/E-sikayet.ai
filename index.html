@@ -534,6 +534,22 @@ loadHistory();
 updateStats();
 
 </script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
+  authDomain: "e-sikayet-ai.firebaseapp.com",
+  projectId: "e-sikayet-ai",
+  storageBucket: "e-sikayet-ai.firebasestorage.app",
+  messagingSenderId: "499728034558",
+  appId: "1:499728034558:web:6a0b0468489fadf67d13af",
+  measurementId: "G-QBYYC201LL"
+};
+
+const app = initializeApp(firebaseConfig);
+
+console.log("Firebase qoşuldu");
+</script>
 </body>
 </html>
