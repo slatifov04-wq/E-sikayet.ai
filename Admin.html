@@ -5,83 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Panel</title>
 
-<script type="module">
-const username = prompt("İstifadəçi adı:");
-const password = prompt("Şifrə:");
-
-if(username !== "admin" || password !== "123456"){
-    document.write("<h1 style='text-align:center;margin-top:100px;color:red'>Giriş qadağandır!</h1>");
-    throw new Error("Unauthorized");
-}
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-getFirestore,
-collection,
-getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-
-apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
-
-authDomain: "e-sikayet-ai.firebaseapp.com",
-
-projectId: "e-sikayet-ai",
-
-storageBucket: "e-sikayet-ai.firebasestorage.app",
-
-messagingSenderId: "499728034558",
-
-appId: "1:499728034558:web:6a0b0468489fadf67d13af"
-
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-async function loadComplaints() {
-
-const snap = await getDocs(
-collection(db,"complaints")
-);
-
-let html = "";
-
-snap.forEach(doc=>{
-
-const d = doc.data();
-
-html += `
-<div class="card">
-
-<h3>${d.id}</h3>
-
-<p><b>Ad:</b> ${d.fullname}</p>
-
-<p><b>Şikayət:</b> ${d.complaint}</p>
-
-<p><b>Prioritet:</b> ${d.priority}</p>
-
-<p><b>Tarix:</b> ${d.date}</p>
-
-<button onclick="alert('Şikayət həll edildi')">
-Həll edildi
-</button>
-
-</div>
-`;
-
-});
-
-document.getElementById("list").innerHTML = html;
-
-}
-
-loadComplaints();
-
-</script>
-
 <style>
 
 body{
@@ -121,6 +44,86 @@ cursor:pointer;
 <h1>Admin Panel</h1>
 
 <div id="list"></div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const username = prompt("İstifadəçi adı:");
+const password = prompt("Şifrə:");
+
+if(username !== "admin" || password !== "123456"){
+document.body.innerHTML =
+"<h1 style='text-align:center;margin-top:100px;color:red'>Giriş qadağandır!</h1>";
+throw new Error("Unauthorized");
+}
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCLuP2m9d-dCTEV5JNfVVkptWzdhYQ0Dss",
+
+authDomain: "e-sikayet-ai.firebaseapp.com",
+
+projectId: "e-sikayet-ai",
+
+storageBucket: "e-sikayet-ai.firebasestorage.app",
+
+messagingSenderId: "499728034558",
+
+appId: "1:499728034558:web:6a0b0468489fadf67d13af"
+
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+async function loadComplaints(){
+
+const snap = await getDocs(
+collection(db,"complaints")
+);
+
+let html = "";
+
+snap.forEach(doc=>{
+
+const d = doc.data();
+
+html += `
+<div class="card">
+
+<h3>${d.id || "-"}</h3>
+
+<p><b>Ad:</b> ${d.fullname || "-"}</p>
+
+<p><b>Şikayət:</b> ${d.complaint || "-"}</p>
+
+<p><b>Prioritet:</b> ${d.priority || "-"}</p>
+
+<p><b>Tarix:</b> ${d.date || "-"}</p>
+
+<button onclick="alert('Şikayət həll edildi')">
+Həll edildi
+</button>
+
+</div>
+`;
+
+});
+
+document.getElementById("list").innerHTML = html;
+
+}
+
+loadComplaints();
+
+</script>
 
 </body>
 </html>
